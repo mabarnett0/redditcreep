@@ -28,6 +28,7 @@ class redditPage {
 }
 
 class subRedditPage extends redditPage {
+  public $posts = array();
   
   function parseNodes() {
     foreach($this->obj->data->children as $child) {
@@ -39,12 +40,49 @@ class subRedditPage extends redditPage {
     unset($this->obj);
   }
   
+  function parsePosts() {
+  	foreach ($this->posts as $key => $post) {
+  		$postId = substr($key, 3);
+  		$this->posts[$postId] = new commentPage('www.reddit.com/comments/' . $postId . '.json');
+  		$this->posts[$postId]->parseNodes();
+  		$this->authors = array_merge($this->authors, $this->posts[$postId]->authors);
+  	}
+    $this->authors = array_unique($this->authors);
+  }
+  
+}
+
+class commentPage extends redditPage {
+	
+	function parseNodes() {
+    foreach($this->obj[1]->data->children as $child) {
+      $this->parseComment($child);
+    }
+  }
+  
+  function parseComment($comment) {
+  	$this->authors[] = $comment->data->author;
+  	if ($comment->data->replies) {
+  		foreach ($comment->data->replies->data->children as $subComment) {
+  			$this->parseComment($subComment);
+  		}
+  	}
+    $this->authors = array_unique($this->authors);
+  }
+	
+}
+
+class userPage extends redditPage {
+	
+	
+	
 }
 
 class subReddit {
   public $scandepth;
   public $pages = array();
   public $url = '';
+  public $authors = array();
   
   function __construct($url, $scandepth) {
     $this->scandepth = $scandepth;
@@ -57,13 +95,16 @@ class subReddit {
     while ($i < $this->scandepth) {
     	$this->pages[$i] = new subRedditPage(($i ? $this->url . '.json?count=' . $count . '&after=' . $this->pages[$i-1]->after : $this->url . '.json'));
     	$this->pages[$i]->parseNodes();
+    	$this->pages[$i]->parsePosts();
+    	$this->authors = array_merge($this->authors, $this->pages[$i]->authors);
     	$count += count($this->pages[$i++]->posts);
     }
+    $this->authors = array_unique($this->authors);
   }
   
 }
 
-$rp = new subReddit('www.reddit.com/r/Dallas/', 2);
+$rp = new subReddit('www.reddit.com/r/Dallas/', 1);
 $rp->scan();
-print_r($rp);
+print_r($rp->authors);
 ?>
