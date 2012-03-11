@@ -10,6 +10,7 @@ class redditPage {
   public $after = '';
   public $needles = array();
   public $finds = array();
+  public $subreddits = array();
   
   function __construct($url, $needles = array()) {
     static $lastreq = 0;
@@ -45,6 +46,7 @@ class redditPage {
   	foreach ($obj->data->children as $child) { // Some objects still acting strange, check for kind == t1/t3 maybe?
   		if (isset($obj->data)) {
   		  $this->authors[] = $child->data->author;
+  		  $this->subreddits[$child->data->subreddit_id] = $child->data->subreddit;
   		  if ($child->kind == 't3') { $this->posts[] = $child->data->id; }
   		  if ($child->kind == 't1') { $this->comments[] = $child->data->id; }
   		  if (in_array($child->data->subreddit, $this->needles)) { $this->finds[$child->data->id] = $child->data->kind . '_' . $child->data->subreddit; }
@@ -95,6 +97,7 @@ class user {
 	public $scandepth;
 	public $needles = array();
 	public $finds = array();
+	public $subreddits = array();
 	
 	function __construct($name, $scandepth, $needles) {
 		$this->url = 'www.reddit.com/user/' . $name;
@@ -110,9 +113,11 @@ class user {
     	$this->pages[$i] = new redditPage(($i ? $this->url . '.json?count=' . $count . '&after=' . $this->pages[$i-1]->after : $this->url . '.json'), $this->needles);
     	$this->pages[$i]->parseShallowObj();
     	$this->finds = array_merge($this->finds, $this->pages[$i]->finds);
+    	$this->subreddits = array_merge($this->subreddits, $this->pages[$i]->subreddits);
     	if (!$this->pages[$i]->after) { break; }
     	$count += count($this->pages[$i]->posts) + count($this->pages[$i++]->comments);
     }
+    unset($this->pages);
 	}
 	
 	
@@ -134,7 +139,6 @@ function creep($scandepth, $secscandepth, $subreddits, $needles) {
     foreach ($rp->authors as $auth) {
 	    $usrs[$auth] = new user($auth, $secscandepth, $needles);
       $usrs[$auth]->scan();
-      unset($usrs[$auth]->pages);
       if (count($usrs[$auth]->finds)) {
   	    $finds[$auth] = $usrs[$auth]->finds;
       }
@@ -142,6 +146,7 @@ function creep($scandepth, $secscandepth, $subreddits, $needles) {
     unset($rp->pages);
   }
   print_r($finds);
+  print_r($usrs);
 }
 
 creep(10, 10, array('Dallas'), array('guns', 'linux', 'programming', 'Minecraft'));
