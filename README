@@ -1,0 +1,10 @@
+There's not much to this scraper and it is just a byproduct of boredom.
+It's currently using the JSON reddit API documented at
+https://github.com/reddit/reddit/wiki/API
+
+If you look at the code, you should see how it works. I know alot
+is lacking and sloppily done but it isn't a real project. Maybe 
+someday I will get around to adding some useful features to it or 
+making it a dependable library. Much needs to be done in the way of
+recursion optimization and handling the reddit API data structures.
+As of this wirting, it's not complete.
