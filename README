@@ -5,6 +5,13 @@ https://github.com/reddit/reddit/wiki/API
 If you look at the code, you should see how it works. I know alot
 is lacking and sloppily done but it isn't a real project. Maybe 
 someday I will get around to adding some useful features to it or 
-making it a dependable library. Much needs to be done in the way of
-recursion optimization and handling the reddit API data structures.
-As of this wirting, it's not complete.
+making it a dependable library. This script can take a while because
+of the rate limit imposed by reddit and the fact that many deeply
+buried pages are not cached so they have to be freshly generated.
+
+Be careful with the scandepth(sd) and secondary scandepth(secsd), since
+this loads the pages in the following fashion:
+       One page for each sd
+     + 25 post comment pages for each page(25 posts per subreddit page)
+     + secsd*numberOfComments on each post
+This can use up quite a bit of memory, although bandwidth is throttled.
