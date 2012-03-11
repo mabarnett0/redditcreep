@@ -44,12 +44,12 @@ class redditPage {
   		$obj = $this->obj;
   	}
   	foreach ($obj->data->children as $child) { // Some objects still acting strange, check for kind == t1/t3 maybe?
-  		if (isset($obj->data)) {
+  		if (isset($child->data) && $child->kind != 'more') { // Fix this later? Such a pain.
   		  $this->authors[] = $child->data->author;
   		  $this->subreddits[$child->data->subreddit_id] = $child->data->subreddit;
   		  if ($child->kind == 't3') { $this->posts[] = $child->data->id; }
   		  if ($child->kind == 't1') { $this->comments[] = $child->data->id; }
-  		  if (in_array($child->data->subreddit, $this->needles)) { $this->finds[$child->data->id] = $child->data->kind . '_' . $child->data->subreddit; }
+  		  if (in_array($child->data->subreddit, $this->needles)) { $this->finds[$child->kind . '_' . $child->data->id] = $child->data->subreddit; }
   		  if (isset($child->data->replies) && $child->data->replies) { $this->parseShallowObj($child->data->replies, 0); }
   		}
   	}
@@ -149,6 +149,6 @@ function creep($scandepth, $secscandepth, $subreddits, $needles) {
   print_r($usrs);
 }
 
-creep(10, 10, array('Dallas'), array('guns', 'linux', 'programming', 'Minecraft'));
+creep(1, 5, array('Dallas'), array('guns', 'linux', 'programming', 'Minecraft'));
 
 ?>
